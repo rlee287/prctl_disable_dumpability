@@ -2,7 +2,9 @@
 
 #include <sys/prctl.h>
 
+#ifndef QUIET
 #include <stdio.h>
+#endif
 #include <stdbool.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -26,8 +28,10 @@ static void* get_func_handle(const char* func_name) {
     void * func_ptr = dlsym(RTLD_NEXT, func_name);
     char * dlsym_err = dlerror();
     if (dlsym_err != NULL) {
+        #ifndef QUIET
         fprintf(stderr, "Error getting handle %s via `dlsym`: %s\n",
             func_name, dlsym_err);
+        #endif
         exit(1);
     }
     return func_ptr;
@@ -38,7 +42,9 @@ static void __attribute__((constructor)) init_orig_handles()
     orig_execve = get_func_handle("execve");
     orig_execvpe = get_func_handle("execvpe");
     orig_fexecve = get_func_handle("fexecve");
+    #ifndef QUIET
     fputs("Init prctl_disable_dumpability success\n", stderr);
+    #endif
 }
 
 static char** env_append(char *const envp[]) {
